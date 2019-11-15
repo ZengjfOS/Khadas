@@ -14,6 +14,7 @@ VIM3 | [DebugHAT](https://github.com/ZengjfOS/DebugHAT)
 
 ## docs
 
+* [0008_PCIe.md](docs/0008_PCIe.md)
 * [0007_I2C_Pin_2_GPIO_Pin.md](docs/0007_I2C_Pin_2_GPIO_Pin.md)
 * [0006_I2C.md](docs/0006_I2C.md)
 * [0005_GPIO.md](docs/0005_GPIO.md)
