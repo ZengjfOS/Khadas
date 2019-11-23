@@ -21,7 +21,7 @@
 #include <cinttypes>
 
 #include "fpgalink.h"
-#include "../../../ip/dvr-rng/dvr_rng.h"
+#include "dvr_rng.h"
 
 namespace {
   // Simple sender struct

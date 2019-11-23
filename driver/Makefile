@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU General Public License along with this program. If
 # not, see <http://www.gnu.org/licenses/>.
 #
-obj-m := fpgalink-driver.o
+obj-m := fpga.o
 
 CHECK_SPARSE ?= 1
 TARGET_KERNEL ?= $(shell uname -r)
@@ -20,8 +20,8 @@ TARGET_KERNEL ?= $(shell uname -r)
 KERNELDIR ?= /lib/modules/$(TARGET_KERNEL)/build
 PWD := $(shell pwd)
 
-CPPFLAGS += -include $(KERNELDIR)/include/generated/autoconf.h
-EXTRA_CFLAGS := -I$(src)/../include
+CPPFLAGS += -include $(KERNELDIR)/include/generated/autoconf.h 
+EXTRA_CFLAGS := -I$(src)/../include -Wall
 
 all:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) C=$(CHECK_SPARSE)

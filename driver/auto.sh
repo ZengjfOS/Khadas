@@ -13,11 +13,9 @@
 # You should have received a copy of the GNU General Public License along with this program. If
 # not, see <http://www.gnu.org/licenses/>.
 #
-MODULE="fpgalink-driver"
-DEVICE="fpga0"
 
-# Invoke rmmod with all arguments we got
-/sbin/rmmod ${MODULE} $* || exit 1
 
-# Remove stale nodes
-rm -f /dev/${DEVICE}
+sudo insmod fpga.ko
+sudo dmesg | tail -n 20
+sudo rmmod fpga
+
