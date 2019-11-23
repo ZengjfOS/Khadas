@@ -14,6 +14,7 @@ VIM3 | [DebugHAT](https://github.com/ZengjfOS/DebugHAT)
 
 ## docs
 
+* [0011_Altera_PCIe.md](docs/0011_Altera_PCIe.md)
 * [0010_Overlay.md](docs/0010_Overlay.md)
 * [0009_Building_Android_Source_Code.md](docs/0009_Building_Android_Source_Code.md)
 * [0008_PCIe.md](docs/0008_PCIe.md)
