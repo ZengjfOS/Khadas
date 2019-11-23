@@ -4,7 +4,8 @@
 
 ## 硬件信息
 
-* https://docs.khadas.com/vim1/HardwareDocs.html
+* https://docs.khadas.com/vim3/
+* https://docs.khadas.com/vim3/HardwareDocs.html
 
 ## Connector
 
@@ -14,6 +15,7 @@ VIM3 | [DebugHAT](https://github.com/ZengjfOS/DebugHAT)
 
 ## docs
 
+* [0012_dev_node.md](docs/0012_dev_node.md)
 * [0011_Altera_PCIe.md](docs/0011_Altera_PCIe.md)
 * [0010_Overlay.md](docs/0010_Overlay.md)
 * [0009_Building_Android_Source_Code.md](docs/0009_Building_Android_Source_Code.md)
