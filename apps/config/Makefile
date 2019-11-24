@@ -2,12 +2,6 @@
 #   make FPGA=cvgt EN_SWAP=1
 #
 
-# FPGA device
-FPGA         := svgx
-
-# Enable/disable register word-swapping
-EN_SWAP      := 0
-
 # By default, just build a JTAG programming-file
 all: defs
 

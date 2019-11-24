@@ -1,2 +1,7 @@
 tags
 *.o
+\.*
+*.ko
+*.order
+*.mod.c
+*.symvers
