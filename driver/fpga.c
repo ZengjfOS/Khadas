@@ -22,9 +22,11 @@
 #include <asm/uaccess.h>
 #include "fpga.h"
 
+#define REG_OFFSET 0x200000
+
 // Read/write register macros
-#define REG_RD(r) (ioread32(ape.regVA + 2*(r) + 1))
-#define REG_WR(r, v) (iowrite32((v), ape.regVA + 2*(r) + 1))
+#define REG_RD(r) (ioread32(ape.regVA + REG_OFFSET + 4*(r)))
+#define REG_WR(r, v) (iowrite32((v), ape.regVA + REG_OFFSET + 4*(r)))
 
 // Driver name
 #define DRV_NAME "fpgalink"
@@ -50,7 +52,6 @@ static struct AlteraDevice {
 
   // Board revision
   u8 revision;
-  int major;
 } ape;
 
 // Userspace is opening the device
@@ -104,6 +105,7 @@ static const struct file_operations cdevFileOps = {
 // - allocate char driver major/minor
 //
 static int pcieProbe(struct pci_dev *dev, const struct pci_device_id *id) {
+  int i = 0;
   int rc, alreadyInUse = 0;
   printk(KERN_DEBUG "pcieProbe(dev = 0x%p, pciid = 0x%p)\n", dev, id);
 
@@ -150,6 +152,25 @@ static int pcieProbe(struct pci_dev *dev, const struct pci_device_id *id) {
     rc = -1; goto err_iomap0;
   }
   printk(KERN_DEBUG "ape.regVA: %p\n", ape.regVA);
+//  printk(KERN_DEBUG "reg 0: %x\n", REG_RD(0));
+  printk(KERN_DEBUG "reg 0: %x\n", ioread32(ape.regVA));
+  for (; i < 10; i++) {
+    printk(KERN_DEBUG "ape.regVA reg %d address: %p\n", i, ape.regVA + (0x200000 / 4) + i);
+    printk(KERN_DEBUG "reg %d: %x\n", i, ioread32(ape.regVA + (0x200000 / 4) + i));
+  }
+
+  printk(KERN_DEBUG "----------write regs start-----------\n");
+  for (i = 3; i < 10; i++) {
+    printk(KERN_DEBUG "write reg %d: %x\n", i, i);
+    iowrite32(i, ape.regVA + (0x200000 / 4) + i);
+  }
+  printk(KERN_DEBUG "----------write regs over-----------\n");
+  printk(KERN_DEBUG "----------read regs start-----------\n");
+  for (i = 3; i < 10; i++) {
+    printk(KERN_DEBUG "ape.regVA reg %d address: %p\n", i, ape.regVA + (0x200000 / 4) + i);
+    printk(KERN_DEBUG "reg %d: %x\n", i, ioread32(ape.regVA + (0x200000 / 4) + i));
+  }
+  printk(KERN_DEBUG "----------read regs over-----------\n");
 
 
   // Allocate char driver major/minor

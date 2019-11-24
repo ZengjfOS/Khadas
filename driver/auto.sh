@@ -16,6 +16,6 @@
 
 
 sudo insmod fpga.ko
-sudo dmesg | tail -n 20
+sudo dmesg | tail -n 40
 sudo rmmod fpga
 
