@@ -1,0 +1,6 @@
+## Altera PCIE Driver
+This driver is a simplified version of `altpciechdma.c` (which lived for a while in the staging area of the Linux kernel, but was not maintained so it was removed), with all the complexity of chaining-DMA removed in favour of a simple direct-I/O (i.e no kernel involvement on the hot-path) scheme which exposes a bunch of FPGA registers and a pair of single-producer/single-consumer queues, in order to orchestrate data transfer between an FPGA and its host computer over PCI-Express.
+
+This repo is not much use on its own; the intent is for it to be a git submodule of your project, along with some other submodules which implement the FPGA side of the system. See the [`altera-pcie`](https://github.com/makestuff/altera-pcie) repo for an example of how to do this.
+
+The driver implements a couple of `ioctl()`s to initialize and control things, but the bulk of the real work happens in userspace, so the driver just implements `mmap()`. Note that it receives definitions of the queue sizes, etc from a `defs.h` file which is generated from a `defs.vh` file located in the application directory (e.g [`$PROJ_HOME/apps/demo/defs.vh`](https://github.com/makestuff/altera-pcie/blob/master/apps/demo/defs.vh)). So before you can build the driver, you need to go there and (at the very least) run `make defs`.
