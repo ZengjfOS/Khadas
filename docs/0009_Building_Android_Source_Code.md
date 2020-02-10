@@ -37,6 +37,15 @@
   * 将`https://android.googlesource.com/`全部使用`https://aosp.tuna.tsinghua.edu.cn/`代替即可。
 * 整个下载过程可能需要3天，吐槽一下：实在是大，大大大，太大，哪都大；
 
+## 编译
+
+* 由于.repo目录下东西太多了，删了比较好，占了240G；
+* source build/envsetup.sh
+* lunch kvim3-userdebug
+* cat /proc/cpuinfo| grep "processor"| wc -l
+* make -j16 2>&1 | tee build-log.txt
+* make -j16 otapackage | tee ota-build-log.txt
+
 
 ## Build out dir
 

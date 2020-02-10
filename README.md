@@ -15,6 +15,7 @@ VIM3 | [DebugHAT](https://github.com/ZengjfOS/DebugHAT)
 
 ## docs
 
+* [0013_NPU.md](docs/0013_NPU.md)
 * [0012_dev_node.md](docs/0012_dev_node.md)
 * [0011_Altera_PCIe.md](docs/0011_Altera_PCIe.md)
 * [0010_Overlay.md](docs/0010_Overlay.md)
