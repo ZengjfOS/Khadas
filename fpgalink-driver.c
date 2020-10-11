@@ -243,6 +243,7 @@ static const struct file_operations cdevFileOps = {
 //
 static int pcieProbe(struct pci_dev *dev, const struct pci_device_id *id) {
   int rc, alreadyInUse = 0;
+  int i = 0;
   printk(KERN_DEBUG "pcieProbe(dev = 0x%p, pciid = 0x%p)\n", dev, id);
 
   ape.pciDevice = dev;
@@ -280,10 +281,7 @@ static int pcieProbe(struct pci_dev *dev, const struct pci_device_id *id) {
 
   // Get FPGA register BAR base address, and validate its size
   ape.regBA = pci_resource_start(dev, REG_BAR);
-  if (!ape.regBA || pci_resource_len(dev, REG_BAR) != 2*PAGE_SIZE) {
-    printk(KERN_DEBUG "REG_BAR has bad configuration\n");
-    rc = -1; goto err_map0;
-  }
+  printk(KERN_DEBUG "pci_resource_len: %llx\n", pci_resource_len(dev, REG_BAR));
   printk(KERN_DEBUG "REG_BAR @0x%08X\n", (u32)ape.regBA);
   ape.regVA = pci_iomap(dev, REG_BAR, 2*PAGE_SIZE);
   if (!ape.regVA) {
@@ -291,45 +289,26 @@ static int pcieProbe(struct pci_dev *dev, const struct pci_device_id *id) {
     rc = -1; goto err_iomap0;
   }
 
-  // Get CPU->FPGA BAR base address, and validate its size
-  ape.c2fBA = pci_resource_start(dev, C2F_BAR);
-  if (!ape.c2fBA || pci_resource_len(dev, C2F_BAR) != C2F_SIZE) {
-    printk(KERN_DEBUG "C2F_BAR has bad configuration\n");
-    rc = -1; goto err_map2;
-  }
-  printk(KERN_DEBUG "C2F_BAR @0x%08X\n", (u32)ape.c2fBA);
-  ape.c2fVA = (u64 *)ioremap_wc(ape.c2fBA, C2F_SIZE);
-  if (!ape.c2fVA) {
-    printk(KERN_DEBUG "Could not map BAR2 into kernel address-space!\n");
-    rc = -1; goto err_iomap2;
+  printk(KERN_DEBUG "ape.regVA: %p\n", ape.regVA);
+  //printk(KERN_DEBUG "reg 0: %x\n", REG_RD(0));
+  printk(KERN_DEBUG "reg 0: %x\n", ioread32(ape.regVA));
+  for (; i < 10; i++) {
+    printk(KERN_DEBUG "ape.regVA reg %d address: %p\n", i, ape.regVA + (0x200000 / 4) + i);
+    printk(KERN_DEBUG "reg %d: %x\n", i, ioread32(ape.regVA + (0x200000 / 4) + i));
   }
 
-  // Allocate and map coherently-cached memory for a DMA-able buffer (see
-  // Documentation/PCI/PCI-DMA-mapping.txt, near line 318)
-  //
-  ape.mtrVA = (volatile u32 *)__get_free_pages(GFP_USER | GFP_DMA32, 0);  // one page for metrics
-  if ( !ape.mtrVA ) {
-    printk(KERN_DEBUG "Could not allocate metrics buffer!\n");
-    rc = -ENOMEM; goto err_mtr_alloc;
+  printk(KERN_DEBUG "----------write regs start-----------\n");
+  for (i = 3; i < 10; i++) {
+    printk(KERN_DEBUG "write reg %d: %x\n", i, i);
+    iowrite32(i, ape.regVA + (0x200000 / 4) + i);
   }
-  ape.mtrBA = dma_map_single(
-    &dev->dev, (void*)ape.mtrVA, PAGE_SIZE, DMA_FROM_DEVICE);
-  printk(
-    KERN_DEBUG "Allocated metrics buffer (virt: %p; bus: 0x%08X).\n",
-    ape.mtrVA, (u32)ape.mtrBA
-  );
-
-  ape.f2cVA = (volatile u32 *)__get_free_pages(GFP_USER | GFP_DMA32, F2C_SIZE_NBITS - PAGE_SHIFT);
-  if ( !ape.f2cVA ) {
-    printk(KERN_DEBUG "Could not allocate DMA buffer!\n");
-    rc = -ENOMEM; goto err_buf_alloc;
+  printk(KERN_DEBUG "----------write regs over-----------\n");
+  printk(KERN_DEBUG "----------read regs start-----------\n");
+  for (i = 3; i < 10; i++) {
+    printk(KERN_DEBUG "ape.regVA reg %d address: %p\n", i, ape.regVA + (0x200000 / 4) + i);
+    printk(KERN_DEBUG "reg %d: %x\n", i, ioread32(ape.regVA + (0x200000 / 4) + i));
   }
-  ape.f2cBA = dma_map_single(
-    &dev->dev, (void*)ape.f2cVA, F2C_SIZE, DMA_FROM_DEVICE);
-  printk(
-    KERN_DEBUG "Allocated DMA buffer (virt: %p; bus: 0x%08X).\n",
-    ape.f2cVA, (u32)ape.f2cBA
-  );
+  printk(KERN_DEBUG "----------read regs over-----------\n");
 
   // Allocate char driver major/minor
   rc = alloc_chrdev_region(&ape.devNum, 0, 1, "fpga0");
@@ -390,17 +369,6 @@ static void pcieRemove(struct pci_dev *dev) {
   // Unregister char device
   unregister_chrdev_region(ape.devNum, 1);
 
-  // Free DMA buffer
-  dma_unmap_single(&dev->dev, ape.f2cBA, F2C_SIZE, DMA_FROM_DEVICE);
-  free_pages((unsigned long)ape.f2cVA, F2C_SIZE_NBITS - PAGE_SHIFT);
-
-  // Free metrics buffer
-  dma_unmap_single(&dev->dev, ape.mtrBA, PAGE_SIZE, DMA_FROM_DEVICE);
-  free_pages((unsigned long)ape.mtrVA, 0);
-
-  // Unmap CPU->FPGA buffer region from kernel virtual address-space
-  pci_iounmap(dev, (void __iomem *)ape.c2fVA);
-
   // Unmap register region from kernel virtual address-space
   pci_iounmap(dev, ape.regVA);
 
@@ -419,8 +387,7 @@ static void pcieRemove(struct pci_dev *dev) {
 // ID's are now used here that are used amongst the testers/developers.
 //
 static const struct pci_device_id ids[] = {
-  { PCI_DEVICE(0x1172, 0xE001), },
-  { PCI_DEVICE(0x2071, 0x2071), },
+  { PCI_DEVICE(0x3952, 0xE951), },
   { 0, }
 };
 MODULE_DEVICE_TABLE(pci, ids);
